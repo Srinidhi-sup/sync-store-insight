@@ -1,24 +1,55 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+import { AlertsPanel } from "@/components/dashboard/AlertsPanel";
+import { FootfallSalesTrend } from "@/components/dashboard/FootfallSalesTrend";
+import { InventoryStatus } from "@/components/dashboard/InventoryStatus";
+import { LiveStoreFeed } from "@/components/dashboard/LiveStoreFeed";
+import { ProductInterest } from "@/components/dashboard/ProductInterest";
+import { QueueMonitoring } from "@/components/dashboard/QueueMonitoring";
+import { StatCards } from "@/components/dashboard/StatCards";
+import { DashboardShell } from "@/components/layout/DashboardShell";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { useDashboardData } from "@/hooks/useDashboardData";
+
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "RetailSync — Real-Time Retail Analytics Dashboard" },
+      {
+        name: "description",
+        content:
+          "Monitor CCTV footfall, POS sales, queues, inventory and AI alerts for your store in real time with RetailSync.",
+      },
+      { property: "og:title", content: "RetailSync — Real-Time Retail Analytics Dashboard" },
+      {
+        property: "og:description",
+        content: "Live CCTV + POS intelligence: footfall, sales, queues, stock and AI alerts.",
+      },
+    ],
+  }),
+  component: Dashboard,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Dashboard() {
+  const { data } = useDashboardData();
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <DashboardShell>
+      <PageHeader />
+      <StatCards stats={data.stats} />
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+        <LiveStoreFeed feed={data.liveFeed} />
+        <AlertsPanel alerts={data.alerts} />
+      </div>
+
+      <InventoryStatus inventory={data.inventory} />
+      <FootfallSalesTrend trends={data.trends} />
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <QueueMonitoring queues={data.queues} />
+        <ProductInterest products={data.productInterest} />
+      </div>
+    </DashboardShell>
   );
 }
